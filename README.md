@@ -1,4 +1,4 @@
-# Loja Minha Make
+# Store System
 
 ## Descrição do Projeto
 
