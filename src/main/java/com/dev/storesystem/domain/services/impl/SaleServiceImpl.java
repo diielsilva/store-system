@@ -5,6 +5,7 @@ import com.dev.storesystem.common.dtos.sale.SaveSaleProductDto;
 import com.dev.storesystem.common.dtos.sale.ShowSaleDto;
 import com.dev.storesystem.common.dtos.sale.ShowSaleProductDto;
 import com.dev.storesystem.common.mappers.EntityMapper;
+import com.dev.storesystem.domain.entities.ProductEntity;
 import com.dev.storesystem.domain.entities.SaleProductEntity;
 import com.dev.storesystem.domain.exceptions.InsufficientAmount;
 import com.dev.storesystem.domain.exceptions.RepeatedProductsReceived;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -91,6 +93,16 @@ public class SaleServiceImpl implements SaleService {
         var today = OffsetDateTime.now();
         var sales = saleProvider.findTodaySales(today);
         return sales.stream().map(entityMapper::mapFromSaleEntityToShowSaleDto).toList();
+    }
+
+    @Override
+    public List<ProductEntity> getCartProducts(List<SaveSaleProductDto> saleProducts) {
+        List<ProductEntity> products = new ArrayList<>();
+        for (var saleProduct : saleProducts) {
+            var product = productProvider.findActiveById(saleProduct.getProductId());
+            products.add(product);
+        }
+        return products;
     }
 
     private BigDecimal calculateTotalSale(List<SaveSaleProductDto> products) {
