@@ -2,6 +2,7 @@ package com.dev.storesystem.common.security.handlers;
 
 import com.dev.storesystem.common.dtos.error.ErrorDetailsDto;
 import com.dev.storesystem.common.security.dtos.AccessProviderDto;
+import com.dev.storesystem.domain.enums.UserPermission;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -26,9 +27,9 @@ public class SecurityResponseHandler {
         response.getWriter().flush();
     }
 
-    public void handleSuccessAuthentication(HttpServletResponse response, String jwt) throws IOException {
+    public void handleSuccessAuthentication(HttpServletResponse response, String jwt, UserPermission permission) throws IOException {
         var mapper = new ObjectMapper();
-        var accessProvider = generateAccessProvider(jwt);
+        var accessProvider = generateAccessProvider(jwt, permission);
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         response.setStatus(200);
@@ -46,9 +47,10 @@ public class SecurityResponseHandler {
         return errorDetails;
     }
 
-    private AccessProviderDto generateAccessProvider(String jwt) {
+    private AccessProviderDto generateAccessProvider(String jwt, UserPermission permission) {
         var accessProvider = new AccessProviderDto();
         accessProvider.setAccessToken(jwt);
+        accessProvider.setPermission(permission);
         accessProvider.setIssuedAt(OffsetDateTime.now());
         return accessProvider;
     }

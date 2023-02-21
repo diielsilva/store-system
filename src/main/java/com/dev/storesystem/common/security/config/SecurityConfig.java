@@ -17,6 +17,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -60,9 +65,20 @@ public class SecurityConfig {
                                 ));
 
                     } catch (Exception exception) {
-                        throw new SecurityConfigException("Erro ao criar a cadeia de filtros");
+                        throw new SecurityConfigException("Erro ao criar a cadeia de filtros!");
                     }
                 }).build();
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var source = new UrlBasedCorsConfigurationSource();
+        var configuration = new CorsConfiguration();
+        configuration.setAllowedMethods(List.of("GET", "PUT", "DELETE", "POST", "HEAD", "OPTIONS", "PATCH"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

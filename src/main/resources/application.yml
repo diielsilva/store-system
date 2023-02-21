@@ -5,7 +5,7 @@ server:
 security:
   jwt:
     secret: 12345
-    expiration: 60000
+    expiration: 60000000
 
 spring:
   datasource:

@@ -48,4 +48,5 @@ public class SaleProviderImpl implements SaleProvider {
     public List<SaleEntity> findTodaySales(OffsetDateTime today) {
         return repository.findTodaySales(today);
     }
+
 }

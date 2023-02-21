@@ -48,7 +48,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             FilterChain chain, Authentication authResult) throws IOException {
         var username = ((UserEntity) authResult.getPrincipal()).getUsername();
         var jwt = authService.generateJwt(username);
-        responseHandler.handleSuccessAuthentication(response, jwt);
+        var permission = ((UserEntity) authResult.getPrincipal()).getPermission();
+        responseHandler.handleSuccessAuthentication(response, jwt, permission);
     }
 
     @Override
