@@ -67,7 +67,7 @@ public class PdfHelperImpl implements PdfHelper {
 
                 idCell.setPhrase(new Phrase(products.get(i).getId().toString()));
                 nameCell.setPhrase(new Phrase(products.get(i).getName()));
-                priceCell.setPhrase(new Phrase(products.get(i).getPrice().toString()));
+                priceCell.setPhrase(new Phrase(String.format("%.2f", products.get(i).getPrice())));
                 amountCell.setPhrase(new Phrase(saleProducts.get(i).getAmount().toString()));
 
                 table.addCell(idCell);
@@ -82,7 +82,7 @@ public class PdfHelperImpl implements PdfHelper {
             document.add(table);
             fontTitle.setSize(16);
 
-            var totalCart = new Paragraph("Total R$ " + totalPrice, fontTitle);
+            var totalCart = new Paragraph(String.format("Total R$ %.2f", totalPrice), fontTitle);
             totalCart.setAlignment(Element.ALIGN_CENTER);
             document.add(totalCart);
         } catch (IOException exception) {
