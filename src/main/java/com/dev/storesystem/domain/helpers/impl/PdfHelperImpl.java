@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -19,17 +20,22 @@ public class PdfHelperImpl implements PdfHelper {
     @Override
     public void generatePdf(HttpServletResponse response, List<ProductEntity> products,
                             List<SaveSaleProductDto> saleProducts) {
-        try (var document = new Document(PageSize.A4)) {
+        try (var document = new Document(PageSize.SMALL_PAPERBACK)) {
 
             PdfWriter.getInstance(document, response.getOutputStream());
             document.open();
+
             var fontTitle = FontFactory.getFont(FontFactory.defaultEncoding);
             fontTitle.setSize(20);
+
             var paragraph = new Paragraph("Loja Minha Make", fontTitle);
+
             paragraph.setAlignment(Element.ALIGN_CENTER);
             document.add(paragraph);
+
             var table = new PdfPTable(4);
             var cell = new PdfPCell();
+            var totalPrice = new BigDecimal(0);
 
             cell.setBorder(Rectangle.NO_BORDER);
             cell.setPadding(3);
@@ -44,32 +50,41 @@ public class PdfHelperImpl implements PdfHelper {
             table.addCell(cell);
 
             for (int i = 0; i < saleProducts.size(); i++) {
-                var dynamicCell01 = new PdfPCell();
-                var dynamicCell02 = new PdfPCell();
-                var dynamicCell03 = new PdfPCell();
-                var dynamicCell04 = new PdfPCell();
+                var idCell = new PdfPCell();
+                var nameCell = new PdfPCell();
+                var priceCell = new PdfPCell();
+                var amountCell = new PdfPCell();
 
-                dynamicCell01.setBorder(Rectangle.NO_BORDER);
-                dynamicCell02.setBorder(Rectangle.NO_BORDER);
-                dynamicCell03.setBorder(Rectangle.NO_BORDER);
-                dynamicCell04.setBorder(Rectangle.NO_BORDER);
-                dynamicCell01.setPadding(3);
-                dynamicCell02.setPadding(3);
-                dynamicCell03.setPadding(3);
-                dynamicCell04.setPadding(3);
+                idCell.setBorder(Rectangle.NO_BORDER);
+                nameCell.setBorder(Rectangle.NO_BORDER);
+                priceCell.setBorder(Rectangle.NO_BORDER);
+                amountCell.setBorder(Rectangle.NO_BORDER);
 
-                dynamicCell01.setPhrase(new Phrase(products.get(i).getId().toString()));
-                dynamicCell02.setPhrase(new Phrase(products.get(i).getName()));
-                dynamicCell03.setPhrase(new Phrase(products.get(i).getPrice().toString()));
-                dynamicCell04.setPhrase(new Phrase(saleProducts.get(i).getAmount().toString()));
+                idCell.setPadding(3);
+                nameCell.setPadding(3);
+                priceCell.setPadding(3);
+                amountCell.setPadding(3);
 
-                table.addCell(dynamicCell01);
-                table.addCell(dynamicCell02);
-                table.addCell(dynamicCell03);
-                table.addCell(dynamicCell04);
+                idCell.setPhrase(new Phrase(products.get(i).getId().toString()));
+                nameCell.setPhrase(new Phrase(products.get(i).getName()));
+                priceCell.setPhrase(new Phrase(products.get(i).getPrice().toString()));
+                amountCell.setPhrase(new Phrase(saleProducts.get(i).getAmount().toString()));
+
+                table.addCell(idCell);
+                table.addCell(nameCell);
+                table.addCell(priceCell);
+                table.addCell(amountCell);
+
+                totalPrice = totalPrice.add(products.get(i).getPrice().multiply(new BigDecimal(saleProducts.get(i)
+                        .getAmount())));
             }
 
             document.add(table);
+            fontTitle.setSize(16);
+
+            var totalCart = new Paragraph("Total R$ " + totalPrice, fontTitle);
+            totalCart.setAlignment(Element.ALIGN_CENTER);
+            document.add(totalCart);
         } catch (IOException exception) {
             throw new BusinessException("Não foi possível gerar o PDF!");
         }

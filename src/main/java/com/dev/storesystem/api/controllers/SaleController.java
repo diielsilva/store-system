@@ -57,7 +57,7 @@ public class SaleController {
         return new ResponseEntity<>(sales, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/cart/pdf")
+    @PostMapping(value = "/cart/pdf")
     public void generatePdf(@RequestBody List<SaveSaleProductDto> saleProducts, HttpServletResponse response) {
         var products = service.getCartProducts(saleProducts);
         response.setContentType("application/pdf");
