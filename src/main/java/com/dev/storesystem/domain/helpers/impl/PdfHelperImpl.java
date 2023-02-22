@@ -25,68 +25,65 @@ public class PdfHelperImpl implements PdfHelper {
             PdfWriter.getInstance(document, response.getOutputStream());
             document.open();
 
-            var fontTitle = FontFactory.getFont(FontFactory.defaultEncoding);
-            fontTitle.setSize(20);
+            var pdfTitle = generateParagraph("Loja Minha Make", 20);
 
-            var paragraph = new Paragraph("Loja Minha Make", fontTitle);
+            document.add(pdfTitle);
 
-            paragraph.setAlignment(Element.ALIGN_CENTER);
-            document.add(paragraph);
-
-            var table = new PdfPTable(4);
-            var cell = new PdfPCell();
+            var productsTable = new PdfPTable(4);
+            var cell = generatePdfCell();
             var totalPrice = new BigDecimal(0);
 
-            cell.setBorder(Rectangle.NO_BORDER);
-            cell.setPadding(3);
-            table.setSpacingBefore(10);
+            productsTable.setSpacingBefore(10);
             cell.setPhrase(new Phrase("ID"));
-            table.addCell(cell);
+            productsTable.addCell(cell);
             cell.setPhrase(new Phrase("Nome"));
-            table.addCell(cell);
+            productsTable.addCell(cell);
             cell.setPhrase(new Phrase("Preço"));
-            table.addCell(cell);
+            productsTable.addCell(cell);
             cell.setPhrase(new Phrase("QTD"));
-            table.addCell(cell);
+            productsTable.addCell(cell);
 
             for (int i = 0; i < saleProducts.size(); i++) {
-                var idCell = new PdfPCell();
-                var nameCell = new PdfPCell();
-                var priceCell = new PdfPCell();
-                var amountCell = new PdfPCell();
-
-                idCell.setBorder(Rectangle.NO_BORDER);
-                nameCell.setBorder(Rectangle.NO_BORDER);
-                priceCell.setBorder(Rectangle.NO_BORDER);
-                amountCell.setBorder(Rectangle.NO_BORDER);
-
-                idCell.setPadding(3);
-                nameCell.setPadding(3);
-                priceCell.setPadding(3);
-                amountCell.setPadding(3);
+                var idCell = generatePdfCell();
+                var nameCell = generatePdfCell();
+                var priceCell = generatePdfCell();
+                var amountCell = generatePdfCell();
 
                 idCell.setPhrase(new Phrase(products.get(i).getId().toString()));
                 nameCell.setPhrase(new Phrase(products.get(i).getName()));
                 priceCell.setPhrase(new Phrase(String.format("%.2f", products.get(i).getPrice())));
                 amountCell.setPhrase(new Phrase(saleProducts.get(i).getAmount().toString()));
 
-                table.addCell(idCell);
-                table.addCell(nameCell);
-                table.addCell(priceCell);
-                table.addCell(amountCell);
+                productsTable.addCell(idCell);
+                productsTable.addCell(nameCell);
+                productsTable.addCell(priceCell);
+                productsTable.addCell(amountCell);
 
                 totalPrice = totalPrice.add(products.get(i).getPrice().multiply(new BigDecimal(saleProducts.get(i)
                         .getAmount())));
             }
 
-            document.add(table);
-            fontTitle.setSize(16);
+            document.add(productsTable);
 
-            var totalCart = new Paragraph(String.format("Total R$ %.2f", totalPrice), fontTitle);
-            totalCart.setAlignment(Element.ALIGN_CENTER);
+            var totalCart = generateParagraph(String.format("Total: R$ %.2f", totalPrice), 14);
             document.add(totalCart);
+
         } catch (IOException exception) {
             throw new BusinessException("Não foi possível gerar o PDF!");
         }
+    }
+
+    private Paragraph generateParagraph(String content, Integer fontSize) {
+        var fontStyle = FontFactory.getFont(FontFactory.defaultEncoding);
+        fontStyle.setSize(fontSize);
+        var paragraph = new Paragraph(content, fontStyle);
+        paragraph.setAlignment(Element.ALIGN_CENTER);
+        return paragraph;
+    }
+
+    private PdfPCell generatePdfCell() {
+        var pdfCell = new PdfPCell();
+        pdfCell.setBorder(Rectangle.NO_BORDER);
+        return pdfCell;
     }
 }
