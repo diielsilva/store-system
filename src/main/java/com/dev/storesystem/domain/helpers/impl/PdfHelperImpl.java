@@ -1,6 +1,6 @@
 package com.dev.storesystem.domain.helpers.impl;
 
-import com.dev.storesystem.common.dtos.sale.SaveSaleProductDto;
+import com.dev.storesystem.common.dtos.sale.ShowPdfSaleDto;
 import com.dev.storesystem.domain.entities.ProductEntity;
 import com.dev.storesystem.domain.exceptions.BusinessException;
 import com.dev.storesystem.domain.helpers.PdfHelper;
@@ -19,9 +19,8 @@ import java.util.List;
 public class PdfHelperImpl implements PdfHelper {
     @Override
     public void generatePdf(HttpServletResponse response, List<ProductEntity> products,
-                            List<SaveSaleProductDto> saleProducts) {
+                            ShowPdfSaleDto pdfSale) {
         try (var document = new Document(PageSize.SMALL_PAPERBACK)) {
-
             PdfWriter.getInstance(document, response.getOutputStream());
             document.open();
 
@@ -38,12 +37,12 @@ public class PdfHelperImpl implements PdfHelper {
             productsTable.addCell(cell);
             cell.setPhrase(new Phrase("Nome"));
             productsTable.addCell(cell);
-            cell.setPhrase(new Phrase("Preço"));
+            cell.setPhrase(new Phrase("Preço (UNIT.)"));
             productsTable.addCell(cell);
             cell.setPhrase(new Phrase("QTD"));
             productsTable.addCell(cell);
 
-            for (int i = 0; i < saleProducts.size(); i++) {
+            for (int i = 0; i < pdfSale.getProducts().size(); i++) {
                 var idCell = generatePdfCell();
                 var nameCell = generatePdfCell();
                 var priceCell = generatePdfCell();
@@ -52,22 +51,30 @@ public class PdfHelperImpl implements PdfHelper {
                 idCell.setPhrase(new Phrase(products.get(i).getId().toString()));
                 nameCell.setPhrase(new Phrase(products.get(i).getName()));
                 priceCell.setPhrase(new Phrase(String.format("%.2f", products.get(i).getPrice())));
-                amountCell.setPhrase(new Phrase(saleProducts.get(i).getAmount().toString()));
+                amountCell.setPhrase(new Phrase(pdfSale.getProducts().get(i).getAmount().toString()));
 
                 productsTable.addCell(idCell);
                 productsTable.addCell(nameCell);
                 productsTable.addCell(priceCell);
                 productsTable.addCell(amountCell);
 
-                totalPrice = totalPrice.add(products.get(i).getPrice().multiply(new BigDecimal(saleProducts.get(i)
-                        .getAmount())));
+                totalPrice = totalPrice.add(products.get(i).getPrice().multiply(
+                        new BigDecimal(pdfSale.getProducts().get(i)
+                                .getAmount())));
+            }
+            document.add(productsTable);
+            if (pdfSale.getPercentDiscount() == null || pdfSale.getPercentDiscount() < 0D || pdfSale.getPercentDiscount() > 100D) {
+                pdfSale.setPercentDiscount(0D);
             }
 
-            document.add(productsTable);
-
-            var totalCart = generateParagraph(String.format("Total: R$ %.2f", totalPrice), 14);
-            document.add(totalCart);
-
+            var discount = BigDecimal.valueOf(pdfSale.getPercentDiscount() / 100D).multiply(totalPrice);
+            var subTotal = generateParagraph(String.format("Sub-Total: R$ %.2f", totalPrice), 14);
+            var showDiscount = generateParagraph(String.format("Descontos: R$ %.2f", discount), 14);
+            var total = totalPrice.subtract(discount);
+            document.add(subTotal);
+            document.add(showDiscount);
+            var showTotal = generateParagraph(String.format("Total: R$ %.2f", total), 14);
+            document.add(showTotal);
         } catch (IOException exception) {
             throw new BusinessException("Não foi possível gerar o PDF!");
         }

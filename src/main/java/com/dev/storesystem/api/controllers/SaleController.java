@@ -1,13 +1,11 @@
 package com.dev.storesystem.api.controllers;
 
 import com.dev.storesystem.common.dtos.sale.SaveSaleDto;
-import com.dev.storesystem.common.dtos.sale.SaveSaleProductDto;
+import com.dev.storesystem.common.dtos.sale.ShowPdfSaleDto;
 import com.dev.storesystem.common.dtos.sale.ShowSaleDto;
 import com.dev.storesystem.common.dtos.sale.ShowSaleProductDto;
-import com.dev.storesystem.domain.entities.ProductEntity;
 import com.dev.storesystem.domain.helpers.PdfHelper;
 import com.dev.storesystem.domain.services.SaleService;
-import com.lowagie.text.pdf.PdfGState;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -58,13 +56,13 @@ public class SaleController {
     }
 
     @PostMapping(value = "/cart/pdf")
-    public void generatePdf(@RequestBody List<SaveSaleProductDto> saleProducts, HttpServletResponse response) {
-        var products = service.getCartProducts(saleProducts);
+    public void generatePdf(@RequestBody @Valid ShowPdfSaleDto pdfSale, HttpServletResponse response) {
+        var products = service.getCartProducts(pdfSale.getProducts());
         response.setContentType("application/pdf");
         var currentDateTime = OffsetDateTime.now();
         String headerkey = "Content-Disposition";
         var headervalue = "attachment; filename=pdf_" + currentDateTime + ".pdf";
         response.setHeader(headerkey, headervalue);
-        pdfHelper.generatePdf(response, products, saleProducts);
+        pdfHelper.generatePdf(response, products, pdfSale);
     }
 }

@@ -119,7 +119,7 @@ public class SaleServiceImpl implements SaleService {
         }
         if (sale.getPercentDiscount() > 0) {
             var percentDiscount = sale.getPercentDiscount() / 100D;
-            discount = new BigDecimal(percentDiscount).multiply(total);
+            discount = BigDecimal.valueOf(percentDiscount).multiply(total);
             sale.setDiscount(discount);
         }
         return total;
