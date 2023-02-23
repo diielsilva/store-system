@@ -60,6 +60,7 @@ public class EntityMapperImpl implements EntityMapper {
     @Override
     public SaleEntity mapFromSaveSaleDtoToSaleEntity(SaveSaleDto saveSaleDto) {
         var saleEntity = new SaleEntity();
+        saleEntity.setPercentDiscount(saveSaleDto.getPercentDiscount());
         saleEntity.setPaymentType(PaymentType.toEnum(saveSaleDto.getPaymentType()));
         return saleEntity;
     }
@@ -71,6 +72,8 @@ public class EntityMapperImpl implements EntityMapper {
         showSaleDto.setUser(mapFromUserEntityToShowUserDto(saleEntity.getUser()));
         showSaleDto.setTotal(saleEntity.getTotal());
         showSaleDto.setPaymentType(saleEntity.getPaymentType());
+        showSaleDto.setDiscount(saleEntity.getDiscount());
+        showSaleDto.setPercentDiscount(saleEntity.getPercentDiscount());
         return showSaleDto;
     }
 

@@ -11,6 +11,8 @@ public class ShowSaleDto extends ShowEntityDto {
     private ShowUserDto user;
     private BigDecimal total;
     private PaymentType paymentType;
+    private BigDecimal discount;
+    private Double percentDiscount;
 
     public ShowSaleDto(Long id, OffsetDateTime createdAt, OffsetDateTime updatedAt, OffsetDateTime deletedAt) {
         super(id, createdAt, updatedAt, deletedAt);
@@ -38,5 +40,21 @@ public class ShowSaleDto extends ShowEntityDto {
 
     public void setPaymentType(PaymentType paymentType) {
         this.paymentType = paymentType;
+    }
+
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
+    }
+
+    public Double getPercentDiscount() {
+        return percentDiscount;
+    }
+
+    public void setPercentDiscount(Double percentDiscount) {
+        this.percentDiscount = percentDiscount;
     }
 }

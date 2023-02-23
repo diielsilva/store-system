@@ -6,6 +6,7 @@ import com.dev.storesystem.common.dtos.sale.ShowSaleDto;
 import com.dev.storesystem.common.dtos.sale.ShowSaleProductDto;
 import com.dev.storesystem.common.mappers.EntityMapper;
 import com.dev.storesystem.domain.entities.ProductEntity;
+import com.dev.storesystem.domain.entities.SaleEntity;
 import com.dev.storesystem.domain.entities.SaleProductEntity;
 import com.dev.storesystem.domain.exceptions.InsufficientAmount;
 import com.dev.storesystem.domain.exceptions.RepeatedProductsReceived;
@@ -54,7 +55,7 @@ public class SaleServiceImpl implements SaleService {
         if (haveRepeatedProducts(saveSaleDto.getProducts())) {
             throw new RepeatedProductsReceived("O carrinho possui produtos repetidos!");
         }
-        saleEntity.setTotal(calculateTotalSale(saveSaleDto.getProducts()));
+        saleEntity.setTotal(calculateTotalSale(saveSaleDto.getProducts(), saleEntity));
         dateHelper.setSaveTime(saleEntity);
         saleProvider.save(saleEntity);
         for (SaveSaleProductDto productDto : saveSaleDto.getProducts()) {
@@ -105,11 +106,21 @@ public class SaleServiceImpl implements SaleService {
         return products;
     }
 
-    private BigDecimal calculateTotalSale(List<SaveSaleProductDto> products) {
+    private BigDecimal calculateTotalSale(List<SaveSaleProductDto> products, SaleEntity sale) {
         var total = new BigDecimal(0);
+        var discount = new BigDecimal(0);
+        if (sale.getPercentDiscount() == null || sale.getPercentDiscount() < 0 || sale.getPercentDiscount() > 100) {
+            sale.setPercentDiscount(0D);
+        }
+        sale.setDiscount(discount);
         for (SaveSaleProductDto productDto : products) {
             var productEntity = productProvider.findActiveById(productDto.getProductId());
             total = total.add(productEntity.getPrice().multiply(new BigDecimal(productDto.getAmount())));
+        }
+        if (sale.getPercentDiscount() > 0) {
+            var percentDiscount = sale.getPercentDiscount() / 100D;
+            discount = new BigDecimal(percentDiscount).multiply(total);
+            sale.setDiscount(discount);
         }
         return total;
     }

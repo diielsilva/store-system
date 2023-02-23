@@ -10,6 +10,7 @@ import java.util.List;
 public class SaveSaleDto {
     @NotBlank(message = "O método de pagamento não pode ser nulo!")
     private String paymentType;
+    private Double percentDiscount;
     @NotNull(message = "Os produtos da venda não podem ser nulos!")
     @NotEmpty(message = "A quantidade de produtos não pode ser menor que um!")
     @Valid
@@ -21,6 +22,14 @@ public class SaveSaleDto {
 
     public void setPaymentType(String paymentType) {
         this.paymentType = paymentType;
+    }
+
+    public Double getPercentDiscount() {
+        return percentDiscount;
+    }
+
+    public void setPercentDiscount(Double percentDiscount) {
+        this.percentDiscount = percentDiscount;
     }
 
     public List<SaveSaleProductDto> getProducts() {

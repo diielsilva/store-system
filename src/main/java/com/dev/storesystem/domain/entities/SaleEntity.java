@@ -18,6 +18,8 @@ public class SaleEntity implements AbstractEntity {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private PaymentType paymentType;
+    private Double percentDiscount;
+    private BigDecimal discount;
     @Column(nullable = false)
     private OffsetDateTime createdAt;
     @Column(nullable = false)
@@ -52,6 +54,22 @@ public class SaleEntity implements AbstractEntity {
 
     public PaymentType getPaymentType() {
         return paymentType;
+    }
+
+    public Double getPercentDiscount() {
+        return percentDiscount;
+    }
+
+    public void setPercentDiscount(Double percentDiscount) {
+        this.percentDiscount = percentDiscount;
+    }
+
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
     }
 
     public void setPaymentType(PaymentType paymentType) {
