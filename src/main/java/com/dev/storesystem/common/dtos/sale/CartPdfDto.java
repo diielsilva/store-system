@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public class ShowPdfSaleDto {
+public class CartPdfDto {
     private Double percentDiscount;
     @NotNull(message = "Os produtos da venda não podem ser nulos!")
     @NotEmpty(message = "A quantidade de produtos não pode ser menor que um!")

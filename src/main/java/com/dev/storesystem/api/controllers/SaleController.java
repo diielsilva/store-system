@@ -1,7 +1,7 @@
 package com.dev.storesystem.api.controllers;
 
+import com.dev.storesystem.common.dtos.sale.CartPdfDto;
 import com.dev.storesystem.common.dtos.sale.SaveSaleDto;
-import com.dev.storesystem.common.dtos.sale.ShowPdfSaleDto;
 import com.dev.storesystem.common.dtos.sale.ShowSaleDto;
 import com.dev.storesystem.common.dtos.sale.ShowSaleProductDto;
 import com.dev.storesystem.domain.helpers.PdfHelper;
@@ -56,13 +56,13 @@ public class SaleController {
     }
 
     @PostMapping(value = "/cart/pdf")
-    public void generatePdf(@RequestBody @Valid ShowPdfSaleDto pdfSale, HttpServletResponse response) {
+    public void generateCartPdf(@RequestBody @Valid CartPdfDto pdfSale, HttpServletResponse response) {
         var products = service.getCartProducts(pdfSale.getProducts());
         response.setContentType("application/pdf");
         var currentDateTime = OffsetDateTime.now();
-        String headerkey = "Content-Disposition";
-        var headervalue = "attachment; filename=pdf_" + currentDateTime + ".pdf";
-        response.setHeader(headerkey, headervalue);
-        pdfHelper.generatePdf(response, products, pdfSale);
+        String key = "Content-Disposition";
+        var value = "attachment; filename=pdf_" + currentDateTime + ".pdf";
+        response.setHeader(key, value);
+        pdfHelper.generateCartPdf(response, products, pdfSale);
     }
 }

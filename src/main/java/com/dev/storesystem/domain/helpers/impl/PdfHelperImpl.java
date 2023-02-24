@@ -1,6 +1,7 @@
 package com.dev.storesystem.domain.helpers.impl;
 
-import com.dev.storesystem.common.dtos.sale.ShowPdfSaleDto;
+import com.dev.storesystem.common.dtos.sale.CartPdfDto;
+import com.dev.storesystem.common.dtos.sale.SaveSaleProductDto;
 import com.dev.storesystem.domain.entities.ProductEntity;
 import com.dev.storesystem.domain.exceptions.BusinessException;
 import com.dev.storesystem.domain.helpers.PdfHelper;
@@ -18,8 +19,8 @@ import java.util.List;
 @Component
 public class PdfHelperImpl implements PdfHelper {
     @Override
-    public void generatePdf(HttpServletResponse response, List<ProductEntity> products,
-                            ShowPdfSaleDto pdfSale) {
+    public void generateCartPdf(HttpServletResponse response, List<ProductEntity> products,
+                                CartPdfDto cartPdf) {
         try (var document = new Document(PageSize.SMALL_PAPERBACK)) {
             PdfWriter.getInstance(document, response.getOutputStream());
             document.open();
@@ -42,42 +43,48 @@ public class PdfHelperImpl implements PdfHelper {
             cell.setPhrase(new Phrase("QTD"));
             productsTable.addCell(cell);
 
-            for (int i = 0; i < pdfSale.getProducts().size(); i++) {
+            for (int i = 0; i < cartPdf.getProducts().size(); i++) {
                 var idCell = generatePdfCell();
                 var nameCell = generatePdfCell();
                 var priceCell = generatePdfCell();
                 var amountCell = generatePdfCell();
 
-                idCell.setPhrase(new Phrase(products.get(i).getId().toString()));
-                nameCell.setPhrase(new Phrase(products.get(i).getName()));
-                priceCell.setPhrase(new Phrase(String.format("%.2f", products.get(i).getPrice())));
-                amountCell.setPhrase(new Phrase(pdfSale.getProducts().get(i).getAmount().toString()));
+                idCell.setPhrase(generatePhrase(products.get(i).getId()));
+                nameCell.setPhrase(generatePhrase(products.get(i).getName()));
+                priceCell.setPhrase(generatePhrase(String.format("%.2f", products.get(i).getPrice())));
+                amountCell.setPhrase(generatePhrase(cartPdf.getProducts().get(i).getAmount()));
 
                 productsTable.addCell(idCell);
                 productsTable.addCell(nameCell);
                 productsTable.addCell(priceCell);
                 productsTable.addCell(amountCell);
 
-                totalPrice = totalPrice.add(products.get(i).getPrice().multiply(
-                        new BigDecimal(pdfSale.getProducts().get(i)
-                                .getAmount())));
+                totalPrice = totalPrice.add(calculateTotalPricePerProduct(products.get(i), cartPdf.getProducts().get(i)));
             }
             document.add(productsTable);
-            if (pdfSale.getPercentDiscount() == null || pdfSale.getPercentDiscount() < 0D || pdfSale.getPercentDiscount() > 100D) {
-                pdfSale.setPercentDiscount(0D);
+            if (cartPdf.getPercentDiscount() == null || cartPdf.getPercentDiscount() < 0D || cartPdf.getPercentDiscount() > 100D) {
+                cartPdf.setPercentDiscount(0D);
             }
 
-            var discount = BigDecimal.valueOf(pdfSale.getPercentDiscount() / 100D).multiply(totalPrice);
+            var discountValue = BigDecimal.valueOf(cartPdf.getPercentDiscount() / 100D).multiply(totalPrice);
             var subTotal = generateParagraph(String.format("Sub-Total: R$ %.2f", totalPrice), 14);
-            var showDiscount = generateParagraph(String.format("Descontos: R$ %.2f", discount), 14);
-            var total = totalPrice.subtract(discount);
+            var discount = generateParagraph(String.format("Descontos: R$ %.2f", discountValue), 14);
+            var total = totalPrice.subtract(discountValue);
             document.add(subTotal);
-            document.add(showDiscount);
+            document.add(discount);
             var showTotal = generateParagraph(String.format("Total: R$ %.2f", total), 14);
             document.add(showTotal);
         } catch (IOException exception) {
             throw new BusinessException("Não foi possível gerar o PDF!");
         }
+    }
+
+    private BigDecimal calculateTotalPricePerProduct(ProductEntity product, SaveSaleProductDto saleProduct) {
+        return product.getPrice().multiply(BigDecimal.valueOf(saleProduct.getAmount()));
+    }
+
+    private Phrase generatePhrase(Object content) {
+        return new Phrase(content.toString());
     }
 
     private Paragraph generateParagraph(String content, Integer fontSize) {
